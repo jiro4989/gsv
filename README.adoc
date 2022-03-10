@@ -9,5 +9,5 @@
 cat sample.csv
 cat sample.csv | gsv
 cat sample.csv | gsv | grep test
-cat sample.csv | gsv | grep test | gsv --ungsv
+cat sample.csv | gsv | grep test | gsv -ungsv
 ----
