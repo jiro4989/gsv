@@ -1,0 +1,60 @@
+---
+name: go test
+
+"on":
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - README*
+      - LICENSE
+      - '**.md'
+      - '**.adoc'
+  pull_request:
+    paths-ignore:
+      - README*
+      - LICENSE
+      - '**.md'
+      - '**.adoc'
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macOS-latest
+        go:
+          - '1.17'
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2.2.0
+        with:
+          go-version: ${{ matrix.go }}
+      - name: Check code format
+        run: |
+          go mod download
+          go fmt ./... | tee gofmt.result
+          count="$(wc -l < gofmt.result)"
+          if [[ "$count" -ne 0 ]]; then
+            echo "[ERR] please run 'go fmt ./...'" >&2
+            exit 1
+          fi
+        shell: bash
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+      - run: go build
+      - run: go install
+      - run: go test -cover ./...
+
+# FIXME:
+# lint:
+#   runs-on: ubuntu-latest
+#   steps:
+#     - uses: actions/checkout@v2
+#     - uses: golangci/golangci-lint-action@v2
+#       with:
+#         version: v1.31
+#         args: --issues-exit-code=0
+#         only-new-issues: true
