@@ -12,6 +12,12 @@ type exitCode int
 
 type Param struct {
 	Ungsv bool
+	LF    string
+}
+
+type App struct {
+	param  Param
+	logger Logger
 }
 
 const (
@@ -29,6 +35,7 @@ var (
 
 func init() {
 	rootCmd.Flags().BoolVarP(&param.Ungsv, "ungsv", "u", false, "unfold csv rows")
+	rootCmd.Flags().StringVarP(&param.LF, "linefeed", "l", "lf", "input text line feed character. [lf | crlf]")
 }
 
 func main() {
@@ -47,39 +54,48 @@ var rootCmd = &cobra.Command{
 }
 
 func Main(p Param) exitCode {
-	l := NewLogger(appName, os.Stdout, os.Stderr)
+	a := NewApp(p)
 
 	if p.Ungsv {
-		if err := readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
-			l.Err(err)
+		if err := a.readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
+			a.logger.Err(err)
 			return exitCodeReadUnfoldErr
 		}
 		return exitCodeOK
 	}
 
-	if err := readFoldAndWrite(os.Stdin, os.Stdout); err != nil {
-		l.Err(err)
+	if err := a.readFoldAndWrite(os.Stdin, os.Stdout); err != nil {
+		a.logger.Err(err)
 		return exitCodeReadFoldErr
 	}
 	return exitCodeOK
 }
 
-func readFoldAndWrite(r io.Reader, w io.Writer) error {
+func NewApp(p Param) *App {
+	l := NewLogger(appName, os.Stdout, os.Stderr)
+	return &App{
+		param:  p,
+		logger: l,
+	}
+}
+
+func (a *App) readFoldAndWrite(r io.Reader, w io.Writer) error {
 	fn := func(c *CSV) ([]string, error) {
 		return c.ReadFold()
 	}
-	return readAndWrite(r, w, fn)
+	return a.readAndWrite(r, w, fn)
 }
 
-func readUnfoldAndWrite(r io.Reader, w io.Writer) error {
+func (a *App) readUnfoldAndWrite(r io.Reader, w io.Writer) error {
 	fn := func(c *CSV) ([]string, error) {
 		return c.ReadUnfold()
 	}
-	return readAndWrite(r, w, fn)
+	return a.readAndWrite(r, w, fn)
 }
 
-func readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) error {
+func (a *App) readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) error {
 	c := NewCSV(r)
+	useCRLF := a.param.LF == "crlf"
 	for {
 		row, err := fn(c)
 		if err == io.EOF {
@@ -89,6 +105,7 @@ func readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) e
 			return err
 		}
 		w := csv.NewWriter(w)
+		w.UseCRLF = useCRLF
 		if err := w.Write(row); err != nil {
 			return err
 		}
