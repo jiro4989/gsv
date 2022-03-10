@@ -16,3 +16,12 @@ cat sample.csv | gsv
 cat sample.csv | gsv | grep test
 cat sample.csv | gsv | grep test | gsv -u
 ----
+
+== Installation
+
+[source,bash]
+----
+go install github.com/jiro4989/gsv@main
+----
+
+or download executables from https://github.com/jiro4989/gsv/releases[GitHub Releases].
