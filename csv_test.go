@@ -46,9 +46,9 @@ func TestUnfold(t *testing.T) {
 	}{
 		{
 			desc: "正常系: 正常に展開できる",
-			s:    `a\\b\\\\あ\nい\\nn`,
+			s:    `a\\b\\\\あ\nい\\nn\c`,
 			want: `a\b\\あ
-い\nn`,
+い\nn\c`,
 		},
 		{
 			desc: "正常系: 変化なし",
