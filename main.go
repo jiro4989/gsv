@@ -4,31 +4,52 @@ import (
 	"encoding/csv"
 	"io"
 	"os"
+
+	"github.com/spf13/cobra"
 )
 
 type exitCode int
 
+type Param struct {
+	Ungsv bool
+}
+
 const (
 	appName             = "gsv"
+	version             = "dev"
 	exitCodeOK exitCode = iota
 	exitCodeArgsErr
 	exitCodeReadFoldErr
 	exitCodeReadUnfoldErr
 )
 
-func main() {
-	os.Exit(int(Main()))
+var (
+	param Param
+)
+
+func init() {
+	rootCmd.Flags().BoolVarP(&param.Ungsv, "ungsv", "u", false, "unfold csv rows")
 }
 
-func Main() exitCode {
-	l := NewLogger(appName, os.Stdout, os.Stderr)
-	args, err := ParseArgs()
-	if err != nil {
-		l.Err(err)
-		return exitCodeArgsErr
+func main() {
+	if err := rootCmd.Execute(); err != nil {
+		panic(err)
 	}
+}
 
-	if args.Ungsv {
+var rootCmd = &cobra.Command{
+	Use:     appName,
+	Short:   "gsv",
+	Version: version,
+	Run: func(cmd *cobra.Command, args []string) {
+		Main(param)
+	},
+}
+
+func Main(p Param) exitCode {
+	l := NewLogger(appName, os.Stdout, os.Stderr)
+
+	if p.Ungsv {
 		if err := readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
 			l.Err(err)
 			return exitCodeReadUnfoldErr
