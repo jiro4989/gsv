@@ -2,6 +2,9 @@
 :sectnums:
 :toc: left
 
+`gsv` transforms a multi-line CSV into one-line CSV to make it easier to `grep`.
+`gsv` is heavily inspired by https://github.com/tomnomnom/gron[gron].
+
 image:./docs/gsv1.png[]
 
 == Usage
