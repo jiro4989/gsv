@@ -2,7 +2,7 @@
 :sectnums:
 :toc: left
 
-image:./docs/gsv1.gif[]
+image:./docs/gsv1.png[]
 
 == Usage
 
