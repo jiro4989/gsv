@@ -2,6 +2,9 @@
 :sectnums:
 :toc: left
 
+image:https://github.com/jiro4989/gsv/actions/workflows/go-test.yml/badge.svg[test, link="https://github.com/jiro4989/gsv/actions/workflows/go-test.yml"]
+image:https://codecov.io/gh/jiro4989/gsv/branch/main/graph/badge.svg[codecov, link="https://codecov.io/gh/jiro4989/gsv"]
+
 `gsv` transforms a multi-line CSV into one-line CSV to make it easier to `grep`.
 `gsv` is heavily inspired by https://github.com/tomnomnom/gron[gron].
 
