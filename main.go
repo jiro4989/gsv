@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
 
@@ -30,7 +31,11 @@ const (
 )
 
 var (
-	param Param
+	param     Param
+	convertLF = map[string]string{
+		"lf":   "\n",
+		"crlf": "\r\n",
+	}
 )
 
 func init() {
@@ -55,6 +60,11 @@ var rootCmd = &cobra.Command{
 
 func Main(p Param) exitCode {
 	a := NewApp(p)
+
+	if err := p.Validate(); err != nil {
+		a.logger.Err(err)
+		return exitCodeArgsErr
+	}
 
 	if p.Ungsv {
 		if err := a.readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
@@ -94,7 +104,7 @@ func (a *App) readUnfoldAndWrite(r io.Reader, w io.Writer) error {
 }
 
 func (a *App) readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) error {
-	c := NewCSV(r)
+	c := NewCSV(r, convertLF[a.param.LF])
 	useCRLF := a.param.LF == "crlf"
 	for {
 		row, err := fn(c)
@@ -110,6 +120,14 @@ func (a *App) readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, 
 			return err
 		}
 		w.Flush()
+	}
+	return nil
+}
+
+func (p *Param) Validate() error {
+	_, ok := convertLF[p.LF]
+	if !ok {
+		return fmt.Errorf("'%s' of '--linefeed' is not supported", p.LF)
 	}
 	return nil
 }

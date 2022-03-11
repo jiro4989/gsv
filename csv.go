@@ -8,12 +8,14 @@ import (
 
 type CSV struct {
 	reader *csv.Reader
+	lf     string
 }
 
-func NewCSV(r io.Reader) *CSV {
+func NewCSV(r io.Reader, lf string) *CSV {
 	c := csv.NewReader(r)
 	return &CSV{
 		reader: c,
+		lf:     lf,
 	}
 }
 
@@ -25,26 +27,26 @@ func (c *CSV) ReadUnfold() ([]string, error) {
 	return c.read(unfold)
 }
 
-func (c *CSV) read(fn func(string) string) ([]string, error) {
+func (c *CSV) read(fn func(string, string) string) ([]string, error) {
 	row, err := c.reader.Read()
 	if err != nil {
 		return nil, err
 	}
 	result := make([]string, len(row))
 	for i, cell := range row {
-		result[i] = fn(cell)
+		result[i] = fn(cell, c.lf)
 	}
 	return result, nil
 }
 
 // fold folds a csv multiline-cell to oneline.
-func fold(s string) string {
+func fold(s, lf string) string {
 	s = strings.ReplaceAll(s, `\`, `\\`)
-	s = strings.ReplaceAll(s, "\n", `\n`)
+	s = strings.ReplaceAll(s, lf, `\n`)
 	return s
 }
 
-func unfold(s string) string {
+func unfold(s, lf string) string {
 	r := strings.NewReader(s)
 	var result []string
 	for {
@@ -65,7 +67,7 @@ func unfold(s string) string {
 				result = append(result, `\`)
 			} else if string(ch2) == "n" {
 				// append '\n' when ch + ch2 == '\n'
-				result = append(result, "\n")
+				result = append(result, lf)
 			} else {
 				result = append(result, sch)
 				result = append(result, sch2)
