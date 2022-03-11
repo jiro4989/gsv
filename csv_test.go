@@ -72,3 +72,28 @@ func TestUnfold(t *testing.T) {
 		})
 	}
 }
+
+func TestFoldUnfold(t *testing.T) {
+	tests := []struct {
+		desc string
+		s    string
+		lf   string
+	}{
+		{
+			desc: "正常系: 変化しない",
+			s: `a\
+b\a\b\c\n
+\あ\い\う\え\お`,
+			lf: "\n",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.desc, func(t *testing.T) {
+			assert := assert.New(t)
+
+			got := unfold(fold(tt.s, tt.lf), tt.lf)
+			assert.Equal(tt.s, got)
+		})
+	}
+}
