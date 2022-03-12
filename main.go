@@ -55,7 +55,7 @@ func main() {
 
 var rootCmd = &cobra.Command{
 	Use:     appName,
-	Short:   "gsv",
+	Short:   "'gsv' transforms a multi-line CSV into one-line CSV to make it easier to 'grep'",
 	Version: version,
 	Run: func(cmd *cobra.Command, args []string) {
 		param.Args = args
