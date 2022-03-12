@@ -99,6 +99,36 @@ Japanese,"太郎
 花子",
 `,
 		},
+		{
+			desc: "err: LF is invalid",
+			p: Param{
+				Ungsv:  false,
+				LF:     "sushi",
+				Output: "",
+				Args:   []string{"testdata/sample1.csv"},
+			},
+			want: exitCodeArgsErr,
+		},
+		{
+			desc: "err: input file is not found",
+			p: Param{
+				Ungsv:  false,
+				LF:     "lf",
+				Output: "",
+				Args:   []string{"sushi.txt"},
+			},
+			want: exitCodeOpenFileErr,
+		},
+		{
+			desc: "err: output directory is not found",
+			p: Param{
+				Ungsv:  false,
+				LF:     "lf",
+				Output: "/a/b/c/d.csv",
+				Args:   []string{"testdata/sample1.csv"},
+			},
+			want: exitCodeOpenFileErr,
+		},
 	}
 
 	for _, tt := range tests {
