@@ -8,12 +8,14 @@ import (
 
 type CSV struct {
 	reader *csv.Reader
+	lf     string
 }
 
-func NewCSV(r io.Reader) *CSV {
+func NewCSV(r io.Reader, lf string) *CSV {
 	c := csv.NewReader(r)
 	return &CSV{
 		reader: c,
+		lf:     lf,
 	}
 }
 
@@ -32,6 +34,7 @@ func (c *CSV) read(fn func(string) string) ([]string, error) {
 	}
 	result := make([]string, len(row))
 	for i, cell := range row {
+		// CSVリーダーで読み取ると改行文字は \n で保持されるみたい
 		result[i] = fn(cell)
 	}
 	return result, nil

@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/csv"
+	"fmt"
 	"io"
 	"os"
 
@@ -12,6 +13,12 @@ type exitCode int
 
 type Param struct {
 	Ungsv bool
+	LF    string
+}
+
+type App struct {
+	param  Param
+	logger Logger
 }
 
 const (
@@ -24,11 +31,16 @@ const (
 )
 
 var (
-	param Param
+	param     Param
+	convertLF = map[string]string{
+		"lf":   "\n",
+		"crlf": "\r\n",
+	}
 )
 
 func init() {
 	rootCmd.Flags().BoolVarP(&param.Ungsv, "ungsv", "u", false, "unfold csv rows")
+	rootCmd.Flags().StringVarP(&param.LF, "linefeed", "l", "lf", "input text line feed character. [lf | crlf]")
 }
 
 func main() {
@@ -47,39 +59,53 @@ var rootCmd = &cobra.Command{
 }
 
 func Main(p Param) exitCode {
-	l := NewLogger(appName, os.Stdout, os.Stderr)
+	a := NewApp(p)
+
+	if err := p.Validate(); err != nil {
+		a.logger.Err(err)
+		return exitCodeArgsErr
+	}
 
 	if p.Ungsv {
-		if err := readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
-			l.Err(err)
+		if err := a.readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
+			a.logger.Err(err)
 			return exitCodeReadUnfoldErr
 		}
 		return exitCodeOK
 	}
 
-	if err := readFoldAndWrite(os.Stdin, os.Stdout); err != nil {
-		l.Err(err)
+	if err := a.readFoldAndWrite(os.Stdin, os.Stdout); err != nil {
+		a.logger.Err(err)
 		return exitCodeReadFoldErr
 	}
 	return exitCodeOK
 }
 
-func readFoldAndWrite(r io.Reader, w io.Writer) error {
+func NewApp(p Param) *App {
+	l := NewLogger(appName, os.Stdout, os.Stderr)
+	return &App{
+		param:  p,
+		logger: l,
+	}
+}
+
+func (a *App) readFoldAndWrite(r io.Reader, w io.Writer) error {
 	fn := func(c *CSV) ([]string, error) {
 		return c.ReadFold()
 	}
-	return readAndWrite(r, w, fn)
+	return a.readAndWrite(r, w, fn)
 }
 
-func readUnfoldAndWrite(r io.Reader, w io.Writer) error {
+func (a *App) readUnfoldAndWrite(r io.Reader, w io.Writer) error {
 	fn := func(c *CSV) ([]string, error) {
 		return c.ReadUnfold()
 	}
-	return readAndWrite(r, w, fn)
+	return a.readAndWrite(r, w, fn)
 }
 
-func readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) error {
-	c := NewCSV(r)
+func (a *App) readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) error {
+	c := NewCSV(r, convertLF[a.param.LF])
+	useCRLF := a.param.LF == "crlf"
 	for {
 		row, err := fn(c)
 		if err == io.EOF {
@@ -89,10 +115,19 @@ func readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) e
 			return err
 		}
 		w := csv.NewWriter(w)
+		w.UseCRLF = useCRLF
 		if err := w.Write(row); err != nil {
 			return err
 		}
 		w.Flush()
+	}
+	return nil
+}
+
+func (p *Param) Validate() error {
+	_, ok := convertLF[p.LF]
+	if !ok {
+		return fmt.Errorf("'%s' of '--linefeed' is not supported", p.LF)
 	}
 	return nil
 }
