@@ -78,6 +78,7 @@ func Main(p Param) exitCode {
 		var err error
 		inputFile, err = os.Open(p.Args[0])
 		if err != nil {
+			a.logger.Err(err)
 			return exitCodeOpenFileErr
 		}
 	} else {
@@ -91,6 +92,7 @@ func Main(p Param) exitCode {
 		var err error
 		outputFile, err = os.Create(p.Output)
 		if err != nil {
+			a.logger.Err(err)
 			return exitCodeOpenFileErr
 		}
 	} else {
