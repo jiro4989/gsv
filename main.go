@@ -12,8 +12,10 @@ import (
 type exitCode int
 
 type Param struct {
-	Ungsv bool
-	LF    string
+	Ungsv  bool
+	LF     string
+	Output string
+	Args   []string
 }
 
 type App struct {
@@ -28,6 +30,7 @@ const (
 	exitCodeArgsErr
 	exitCodeReadFoldErr
 	exitCodeReadUnfoldErr
+	exitCodeOpenFileErr
 )
 
 var (
@@ -41,6 +44,7 @@ var (
 func init() {
 	rootCmd.Flags().BoolVarP(&param.Ungsv, "ungsv", "u", false, "unfold csv rows")
 	rootCmd.Flags().StringVarP(&param.LF, "linefeed", "l", "lf", "input text line feed character. [lf | crlf]")
+	rootCmd.Flags().StringVarP(&param.Output, "output", "o", "", "output file path")
 }
 
 func main() {
@@ -54,6 +58,7 @@ var rootCmd = &cobra.Command{
 	Short:   "gsv",
 	Version: version,
 	Run: func(cmd *cobra.Command, args []string) {
+		param.Args = args
 		Main(param)
 	},
 }
@@ -66,15 +71,43 @@ func Main(p Param) exitCode {
 		return exitCodeArgsErr
 	}
 
+	// open file when args have a file
+	var inputFile *os.File
+	defer inputFile.Close()
+	if 0 < len(p.Args) {
+		var err error
+		inputFile, err = os.Open(p.Args[0])
+		if err != nil {
+			a.logger.Err(err)
+			return exitCodeOpenFileErr
+		}
+	} else {
+		inputFile = os.Stdin
+	}
+
+	// create a file when an output file path is empty
+	var outputFile *os.File
+	defer outputFile.Close()
+	if 0 < len(p.Output) {
+		var err error
+		outputFile, err = os.Create(p.Output)
+		if err != nil {
+			a.logger.Err(err)
+			return exitCodeOpenFileErr
+		}
+	} else {
+		outputFile = os.Stdout
+	}
+
 	if p.Ungsv {
-		if err := a.readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
+		if err := a.readUnfoldAndWrite(inputFile, outputFile); err != nil {
 			a.logger.Err(err)
 			return exitCodeReadUnfoldErr
 		}
 		return exitCodeOK
 	}
 
-	if err := a.readFoldAndWrite(os.Stdin, os.Stdout); err != nil {
+	if err := a.readFoldAndWrite(inputFile, outputFile); err != nil {
 		a.logger.Err(err)
 		return exitCodeReadFoldErr
 	}
