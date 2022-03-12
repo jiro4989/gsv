@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestCSV_Read(t *testing.T) {
+func TestCSV_ReadFold(t *testing.T) {
 	tests := []struct {
 		desc    string
 		r       io.Reader
@@ -34,6 +34,13 @@ func TestCSV_Read(t *testing.T) {
 			desc:    "正常系: 改行文字",
 			r:       strings.NewReader("\"a\nb\",c,\"d\ne\""),
 			lf:      "\n",
+			want:    []string{`a\nb`, "c", `d\ne`},
+			wantErr: false,
+		},
+		{
+			desc:    "正常系: CRLF改行文字",
+			r:       strings.NewReader("\"a\r\nb\",c,\"d\r\ne\""),
+			lf:      "\r\n",
 			want:    []string{`a\nb`, "c", `d\ne`},
 			wantErr: false,
 		},

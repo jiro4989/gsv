@@ -34,7 +34,8 @@ func (c *CSV) read(fn func(string, string) string) ([]string, error) {
 	}
 	result := make([]string, len(row))
 	for i, cell := range row {
-		result[i] = fn(cell, c.lf)
+		// CSVリーダーで読み取ると改行文字は \n で保持されるみたい
+		result[i] = fn(cell, "\n")
 	}
 	return result, nil
 }
