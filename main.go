@@ -14,6 +14,7 @@ type exitCode int
 type Param struct {
 	Ungsv bool
 	LF    string
+	Args  []string
 }
 
 type App struct {
@@ -28,6 +29,7 @@ const (
 	exitCodeArgsErr
 	exitCodeReadFoldErr
 	exitCodeReadUnfoldErr
+	exitCodeOpenFileErr
 )
 
 var (
@@ -54,6 +56,7 @@ var rootCmd = &cobra.Command{
 	Short:   "gsv",
 	Version: version,
 	Run: func(cmd *cobra.Command, args []string) {
+		param.Args = args
 		Main(param)
 	},
 }
@@ -66,15 +69,28 @@ func Main(p Param) exitCode {
 		return exitCodeArgsErr
 	}
 
+	// open file when args have a file.
+	var inputFile *os.File
+	defer inputFile.Close()
+	if 0 < len(p.Args) {
+		var err error
+		inputFile, err = os.Open(p.Args[0])
+		if err != nil {
+			return exitCodeOpenFileErr
+		}
+	} else {
+		inputFile = os.Stdin
+	}
+
 	if p.Ungsv {
-		if err := a.readUnfoldAndWrite(os.Stdin, os.Stdout); err != nil {
+		if err := a.readUnfoldAndWrite(inputFile, os.Stdout); err != nil {
 			a.logger.Err(err)
 			return exitCodeReadUnfoldErr
 		}
 		return exitCodeOK
 	}
 
-	if err := a.readFoldAndWrite(os.Stdin, os.Stdout); err != nil {
+	if err := a.readFoldAndWrite(inputFile, os.Stdout); err != nil {
 		a.logger.Err(err)
 		return exitCodeReadFoldErr
 	}
