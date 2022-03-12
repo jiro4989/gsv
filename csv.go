@@ -27,7 +27,7 @@ func (c *CSV) ReadUnfold() ([]string, error) {
 	return c.read(unfold)
 }
 
-func (c *CSV) read(fn func(string, string) string) ([]string, error) {
+func (c *CSV) read(fn func(string) string) ([]string, error) {
 	row, err := c.reader.Read()
 	if err != nil {
 		return nil, err
@@ -35,19 +35,19 @@ func (c *CSV) read(fn func(string, string) string) ([]string, error) {
 	result := make([]string, len(row))
 	for i, cell := range row {
 		// CSVリーダーで読み取ると改行文字は \n で保持されるみたい
-		result[i] = fn(cell, "\n")
+		result[i] = fn(cell)
 	}
 	return result, nil
 }
 
 // fold folds a csv multiline-cell to oneline.
-func fold(s, lf string) string {
+func fold(s string) string {
 	s = strings.ReplaceAll(s, `\`, `\\`)
-	s = strings.ReplaceAll(s, lf, `\n`)
+	s = strings.ReplaceAll(s, "\n", `\n`)
 	return s
 }
 
-func unfold(s, lf string) string {
+func unfold(s string) string {
 	r := strings.NewReader(s)
 	var result []string
 	for {
@@ -68,7 +68,7 @@ func unfold(s, lf string) string {
 				result = append(result, `\`)
 			} else if string(ch2) == "n" {
 				// append '\n' when ch + ch2 == '\n'
-				result = append(result, lf)
+				result = append(result, "\n")
 			} else {
 				result = append(result, sch)
 				result = append(result, sch2)
