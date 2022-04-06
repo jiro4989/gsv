@@ -45,7 +45,7 @@ jobs:
       - run: go build
       - run: go install
       - run: go test -coverprofile=cover.out -covermode=count ./...
-      - uses: codecov/codecov-action@v2.1.0
+      - uses: codecov/codecov-action@v3
 
   lint:
     runs-on: ubuntu-latest
