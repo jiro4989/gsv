@@ -28,7 +28,7 @@ jobs:
           - '1.17'
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-go@v2.2.0
+      - uses: actions/setup-go@v3
         with:
           go-version: ${{ matrix.go }}
       - name: Check code format
