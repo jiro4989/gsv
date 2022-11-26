@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"encoding/csv"
 	"fmt"
 	"io"
@@ -123,36 +124,47 @@ func NewApp(p Param) *App {
 }
 
 func (a *App) readFoldAndWrite(r io.Reader, w io.Writer) error {
-	fn := func(c *CSV) ([]string, error) {
-		return c.ReadFold()
-	}
-	return a.readAndWrite(r, w, fn)
-}
-
-func (a *App) readUnfoldAndWrite(r io.Reader, w io.Writer) error {
-	fn := func(c *CSV) ([]string, error) {
-		return c.ReadUnfold()
-	}
-	return a.readAndWrite(r, w, fn)
-}
-
-func (a *App) readAndWrite(r io.Reader, w io.Writer, fn func(c *CSV) ([]string, error)) error {
-	c := NewCSV(r, convertLF[a.param.LF])
-	useCRLF := a.param.LF == "crlf"
+	c := csv.NewReader(r)
 	for {
-		row, err := fn(c)
+		row, err := c.Read()
 		if err == io.EOF {
 			break
 		}
 		if err != nil {
 			return err
 		}
-		w := csv.NewWriter(w)
-		w.UseCRLF = useCRLF
-		if err := w.Write(row); err != nil {
+		result, err := Fold(row)
+		result += "\n"
+		b := []byte(result)
+		if _, err := w.Write(b); err != nil {
 			return err
 		}
-		w.Flush()
+	}
+	return nil
+}
+
+func (a *App) readUnfoldAndWrite(r io.Reader, w io.Writer) error {
+	br := bufio.NewReader(r)
+	cw := csv.NewWriter(w)
+	cw.UseCRLF = a.param.LF == "crlf"
+	for {
+		line, _, err := br.ReadLine()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		row, err := Unfold(string(line))
+		if err != nil {
+			return err
+		}
+
+		if err := cw.Write(row); err != nil {
+			return err
+		}
+		cw.Flush()
 	}
 	return nil
 }
