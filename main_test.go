@@ -41,7 +41,7 @@ func TestMain2(t *testing.T) {
 		wantOutFile string
 	}{
 		{
-			desc: "ok: write to stdout. \" is removed. a last line has a line feed",
+			desc: "ok: multi line csv",
 			p: Param{
 				Ungsv:  false,
 				LF:     "lf",
@@ -49,23 +49,28 @@ func TestMain2(t *testing.T) {
 				Args:   []string{"testdata/sample1.csv"},
 			},
 			want: exitCodeOK,
-			wantStdout: `Language,Word,Note
-English,Hello\nWorld,note
-Japanese,こんにちは\nこんばんは,メモ
-English,John\nRose,
-Japanese,太郎\n花子,
+			wantStdout: `["Language","Word","Note"]
+["English","Hello\nWorld","note"]
+["Japanese","こんにちは\nこんばんは","メモ"]
+["English","John\nRose",""]
+["Japanese","太郎\n花子",""]
 `,
 		},
 		{
-			desc: "ok: write output to stdout, and line feed is CRLF",
+			desc: "ok: LF is used when Ungsv flag was true",
 			p: Param{
 				Ungsv:  false,
 				LF:     "crlf",
 				Output: "",
 				Args:   []string{"testdata/sample1.csv"},
 			},
-			want:       exitCodeOK,
-			wantStdout: "Language,Word,Note\r\nEnglish,Hello\\nWorld,note\r\nJapanese,こんにちは\\nこんばんは,メモ\r\nEnglish,John\\nRose,\r\nJapanese,太郎\\n花子,\r\n",
+			want: exitCodeOK,
+			wantStdout: `["Language","Word","Note"]
+["English","Hello\nWorld","note"]
+["Japanese","こんにちは\nこんばんは","メモ"]
+["English","John\nRose",""]
+["Japanese","太郎\n花子",""]
+`,
 		},
 		{
 			desc: "ok: write output to file",
@@ -85,7 +90,7 @@ Japanese,太郎\n花子,
 				Ungsv:  true,
 				LF:     "lf",
 				Output: "",
-				Args:   []string{"testdata/sample3_gsved_utf8_unix.csv"},
+				Args:   []string{"testdata/sample3_gsved_utf8_unix.txt"},
 			},
 			want: exitCodeOK,
 			wantStdout: `Language,Word,Note
