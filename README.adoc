@@ -8,7 +8,36 @@ image:https://codecov.io/gh/jiro4989/gsv/branch/main/graph/badge.svg[codecov, li
 `gsv` transforms a multi-line CSV into one-line JSON to make it easier to `grep`.
 `gsv` is heavily inspired by https://github.com/tomnomnom/gron[gron].
 
-image:./docs/gsv1.png[]
+[source,bash]
+----
+⟩ cat testdata/sample1.csv
+Language,Word,Note
+English,"Hello
+World",note
+Japanese,"こんにちは
+こんばんは",メモ
+English,"John
+Rose",
+Japanese,"太郎
+花子",
+
+⟩ cat testdata/sample1.csv | ./gsv
+["Language","Word","Note"]
+["English","Hello\nWorld","note"]
+["Japanese","こんにちは\nこんばんは","メモ"]
+["English","John\nRose",""]
+["Japanese","太郎\n花子",""]
+
+⟩ cat testdata/sample1.csv | ./gsv | grep Japan
+["Japanese","こんにちは\nこんばんは","メモ"]
+["Japanese","太郎\n花子",""]
+
+⟩ cat testdata/sample1.csv | ./gsv | grep Japan | ./gsv -u
+Japanese,"こんにちは
+こんばんは",メモ
+Japanese,"太郎
+花子",
+----
 
 == Usage
 
