@@ -109,6 +109,23 @@ Japanese,"太郎
 `,
 		},
 		{
+			desc: "ok: reading sjis csv",
+			p: Param{
+				Ungsv:    false,
+				LF:       "crlf",
+				Output:   "",
+				Encoding: "sjis",
+				Args:     []string{"testdata/sample4_sjis_crlf.txt"},
+			},
+			want: exitCodeOK,
+			wantStdout: `["Language","Word","Note"]
+["English","Hello\nWorld","note"]
+["Japanese","こんにちは\nこんばんは","メモ"]
+["English","John\nRose",""]
+["Japanese","太郎\n花子",""]
+`,
+		},
+		{
 			desc: "err: LF is invalid",
 			p: Param{
 				Ungsv:    false,
