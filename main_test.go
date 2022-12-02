@@ -120,6 +120,17 @@ Japanese,"太郎
 			want: exitCodeArgsErr,
 		},
 		{
+			desc: "err: unsupported encoding",
+			p: Param{
+				Ungsv:    false,
+				LF:       "lf",
+				Output:   "",
+				Encoding: "sushi",
+				Args:     []string{"testdata/sample1.csv"},
+			},
+			want: exitCodeArgsErr,
+		},
+		{
 			desc: "err: input file is not found",
 			p: Param{
 				Ungsv:    false,
