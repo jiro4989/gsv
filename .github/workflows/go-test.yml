@@ -45,5 +45,5 @@ jobs:
       - run: go vet
       - run: go build
       - run: go install
-      - run: go test -coverprofile=cover.out -covermode=count ./...
+      - run: go test -coverprofile=cover.out ./...
       - uses: codecov/codecov-action@v3
