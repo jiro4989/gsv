@@ -1,9 +1,4 @@
-Language,Word,Note
-English,"Hello
-World",note
-Japanese,"‚±‚ñ‚É‚¿‚Í
-‚±‚ñ‚Î‚ñ‚Í",ƒƒ‚
-English,"John
-Rose",
-Japanese,"‘¾˜Y
-‰Ôq",
+a,b
+“ú–{,Japan
+‚ ,"‚¢
+‚¤"
