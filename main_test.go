@@ -118,11 +118,9 @@ Japanese,"太郎
 				Args:     []string{"testdata/sample4_sjis_crlf.txt"},
 			},
 			want: exitCodeOK,
-			wantStdout: `["Language","Word","Note"]
-["English","Hello\nWorld","note"]
-["Japanese","こんにちは\nこんばんは","メモ"]
-["English","John\nRose",""]
-["Japanese","太郎\n花子",""]
+			wantStdout: `["a","b"]
+["日本","Japan"]
+["あ","い\nう"]
 `,
 		},
 		{
