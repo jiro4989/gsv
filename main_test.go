@@ -43,10 +43,11 @@ func TestMain2(t *testing.T) {
 		{
 			desc: "ok: multi line csv",
 			p: Param{
-				Ungsv:  false,
-				LF:     "lf",
-				Output: "",
-				Args:   []string{"testdata/sample1.csv"},
+				Ungsv:    false,
+				LF:       "lf",
+				Output:   "",
+				Encoding: "utf8",
+				Args:     []string{"testdata/sample1.csv"},
 			},
 			want: exitCodeOK,
 			wantStdout: `["Language","Word","Note"]
@@ -59,10 +60,11 @@ func TestMain2(t *testing.T) {
 		{
 			desc: "ok: LF is used when Ungsv flag was true",
 			p: Param{
-				Ungsv:  false,
-				LF:     "crlf",
-				Output: "",
-				Args:   []string{"testdata/sample1.csv"},
+				Ungsv:    false,
+				LF:       "crlf",
+				Output:   "",
+				Encoding: "utf8",
+				Args:     []string{"testdata/sample1.csv"},
 			},
 			want: exitCodeOK,
 			wantStdout: `["Language","Word","Note"]
@@ -75,10 +77,11 @@ func TestMain2(t *testing.T) {
 		{
 			desc: "ok: write output to file",
 			p: Param{
-				Ungsv:  false,
-				LF:     "lf",
-				Output: testOutputDir + "/1.csv",
-				Args:   []string{"testdata/sample1.csv"},
+				Ungsv:    false,
+				LF:       "lf",
+				Output:   testOutputDir + "/1.csv",
+				Encoding: "utf8",
+				Args:     []string{"testdata/sample1.csv"},
 			},
 			want:        exitCodeOK,
 			wantStdout:  "",
@@ -87,10 +90,11 @@ func TestMain2(t *testing.T) {
 		{
 			desc: "ok: use Ungsv",
 			p: Param{
-				Ungsv:  true,
-				LF:     "lf",
-				Output: "",
-				Args:   []string{"testdata/sample3_gsved_utf8_unix.txt"},
+				Ungsv:    true,
+				LF:       "lf",
+				Output:   "",
+				Encoding: "utf8",
+				Args:     []string{"testdata/sample3_gsved_utf8_unix.txt"},
 			},
 			want: exitCodeOK,
 			wantStdout: `Language,Word,Note
@@ -105,32 +109,61 @@ Japanese,"太郎
 `,
 		},
 		{
+			desc: "ok: reading sjis csv",
+			p: Param{
+				Ungsv:    false,
+				LF:       "crlf",
+				Output:   "",
+				Encoding: "sjis",
+				Args:     []string{"testdata/sample4_sjis_crlf.txt"},
+			},
+			want: exitCodeOK,
+			wantStdout: `["a","b"]
+["日本","Japan"]
+["あ","い\nう"]
+`,
+		},
+		{
 			desc: "err: LF is invalid",
 			p: Param{
-				Ungsv:  false,
-				LF:     "sushi",
-				Output: "",
-				Args:   []string{"testdata/sample1.csv"},
+				Ungsv:    false,
+				LF:       "sushi",
+				Output:   "",
+				Encoding: "utf8",
+				Args:     []string{"testdata/sample1.csv"},
+			},
+			want: exitCodeArgsErr,
+		},
+		{
+			desc: "err: unsupported encoding",
+			p: Param{
+				Ungsv:    false,
+				LF:       "lf",
+				Output:   "",
+				Encoding: "sushi",
+				Args:     []string{"testdata/sample1.csv"},
 			},
 			want: exitCodeArgsErr,
 		},
 		{
 			desc: "err: input file is not found",
 			p: Param{
-				Ungsv:  false,
-				LF:     "lf",
-				Output: "",
-				Args:   []string{"sushi.txt"},
+				Ungsv:    false,
+				LF:       "lf",
+				Output:   "",
+				Encoding: "utf8",
+				Args:     []string{"sushi.txt"},
 			},
 			want: exitCodeOpenFileErr,
 		},
 		{
 			desc: "err: output directory is not found",
 			p: Param{
-				Ungsv:  false,
-				LF:     "lf",
-				Output: "/a/b/c/d.csv",
-				Args:   []string{"testdata/sample1.csv"},
+				Ungsv:    false,
+				LF:       "lf",
+				Output:   "/a/b/c/d.csv",
+				Encoding: "utf8",
+				Args:     []string{"testdata/sample1.csv"},
 			},
 			want: exitCodeOpenFileErr,
 		},

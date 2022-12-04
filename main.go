@@ -8,15 +8,18 @@ import (
 	"os"
 
 	"github.com/spf13/cobra"
+	"golang.org/x/text/encoding/japanese"
+	"golang.org/x/text/transform"
 )
 
 type exitCode int
 
 type Param struct {
-	Ungsv  bool
-	LF     string
-	Output string
-	Args   []string
+	Ungsv    bool
+	LF       string
+	Output   string
+	Encoding string
+	Args     []string
 }
 
 type App struct {
@@ -44,8 +47,9 @@ var (
 
 func init() {
 	rootCmd.Flags().BoolVarP(&param.Ungsv, "ungsv", "u", false, "unfold csv rows")
-	rootCmd.Flags().StringVarP(&param.LF, "linefeed", "l", "lf", "input text line feed character. [lf | crlf]")
+	rootCmd.Flags().StringVarP(&param.LF, "linefeed", "l", "lf", "input text line feed character [lf | crlf]")
 	rootCmd.Flags().StringVarP(&param.Output, "output", "o", "", "output file path")
+	rootCmd.Flags().StringVarP(&param.Encoding, "encoding", "e", "utf8", "input csv encoding [utf8 | sjis]")
 }
 
 func main() {
@@ -108,10 +112,17 @@ func Main(p Param) exitCode {
 		return exitCodeOK
 	}
 
-	if err := a.readFoldAndWrite(inputFile, outputFile); err != nil {
+	var r io.Reader
+	if ok, _ := p.IsShiftJIS(); ok {
+		r = transform.NewReader(inputFile, japanese.ShiftJIS.NewDecoder())
+	} else {
+		r = inputFile
+	}
+	if err := a.readFoldAndWrite(r, outputFile); err != nil {
 		a.logger.Err(err)
 		return exitCodeReadFoldErr
 	}
+
 	return exitCodeOK
 }
 
@@ -131,13 +142,17 @@ func (a *App) readFoldAndWrite(r io.Reader, w io.Writer) error {
 			break
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("read stream error: %w", err)
 		}
 		result, err := Fold(row)
+		if err != nil {
+			return fmt.Errorf("folding string error: %w", err)
+		}
+
 		result += "\n"
 		b := []byte(result)
 		if _, err := w.Write(b); err != nil {
-			return err
+			return fmt.Errorf("write stream error: %w", err)
 		}
 	}
 	return nil
@@ -153,16 +168,16 @@ func (a *App) readUnfoldAndWrite(r io.Reader, w io.Writer) error {
 			break
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("read stream error: %w", err)
 		}
 
 		row, err := Unfold(string(line))
 		if err != nil {
-			return err
+			return fmt.Errorf("unfolding error: %w", err)
 		}
 
 		if err := cw.Write(row); err != nil {
-			return err
+			return fmt.Errorf("write stream error: %w", err)
 		}
 		cw.Flush()
 	}
@@ -174,5 +189,22 @@ func (p *Param) Validate() error {
 	if !ok {
 		return fmt.Errorf("'%s' of '--linefeed' is not supported", p.LF)
 	}
+
+	if !p.Ungsv {
+		if _, err := p.IsShiftJIS(); err != nil {
+			return fmt.Errorf("validation error: %w", err)
+		}
+	}
+
 	return nil
+}
+
+func (p *Param) IsShiftJIS() (bool, error) {
+	switch p.Encoding {
+	case "sjis":
+		return true, nil
+	case "utf8":
+		return false, nil
+	}
+	return false, fmt.Errorf("'%s' is not supported", p.Encoding)
 }

@@ -42,17 +42,8 @@ jobs:
           fi
         shell: bash
         if: ${{ matrix.os == 'ubuntu-latest' }}
+      - run: go vet
       - run: go build
       - run: go install
-      - run: go test -coverprofile=cover.out -covermode=count ./...
+      - run: go test -coverprofile=cover.out ./...
       - uses: codecov/codecov-action@v3
-
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - uses: golangci/golangci-lint-action@v3.3.1
-        with:
-          version: v1.31
-          args: --issues-exit-code=0
-          only-new-issues: true

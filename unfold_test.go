@@ -28,6 +28,12 @@ func TestUnfold2(t *testing.T) {
 			row:  `["hello\\nworld"]`,
 			want: []string{"hello\\nworld"},
 		},
+		{
+			desc:    "ng: fail",
+			row:     `"`,
+			want:    nil,
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
