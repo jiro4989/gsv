@@ -22,10 +22,6 @@ func NewLogger(appName string, stdout, stderr io.Writer) Logger {
 	return l
 }
 
-func (l *Logger) Info(s string) {
-	l.stdout.Output(1, " [INFO] "+s)
-}
-
 func (l *Logger) Err(err error) {
 	l.stderr.Output(1, " [ERR ] "+err.Error())
 }

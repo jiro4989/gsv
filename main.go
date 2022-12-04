@@ -142,13 +142,17 @@ func (a *App) readFoldAndWrite(r io.Reader, w io.Writer) error {
 			break
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("read stream error: %w", err)
 		}
 		result, err := Fold(row)
+		if err != nil {
+			return fmt.Errorf("folding string error: %w", err)
+		}
+
 		result += "\n"
 		b := []byte(result)
 		if _, err := w.Write(b); err != nil {
-			return err
+			return fmt.Errorf("write stream error: %w", err)
 		}
 	}
 	return nil
@@ -164,16 +168,16 @@ func (a *App) readUnfoldAndWrite(r io.Reader, w io.Writer) error {
 			break
 		}
 		if err != nil {
-			return err
+			return fmt.Errorf("read stream error: %w", err)
 		}
 
 		row, err := Unfold(string(line))
 		if err != nil {
-			return err
+			return fmt.Errorf("unfolding error: %w", err)
 		}
 
 		if err := cw.Write(row); err != nil {
-			return err
+			return fmt.Errorf("write stream error: %w", err)
 		}
 		cw.Flush()
 	}
