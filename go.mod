@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
-	golang.org/x/text v0.13.0
+	golang.org/x/text v0.14.0
 )
 
 require (
