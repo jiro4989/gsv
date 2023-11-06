@@ -3,7 +3,7 @@ module github.com/jiro4989/gsv
 go 1.19
 
 require (
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.8.4
 	golang.org/x/text v0.13.0
 )
