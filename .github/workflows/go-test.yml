@@ -27,7 +27,7 @@ jobs:
         go:
           - '1.19'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go }}
